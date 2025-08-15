@@ -1,0 +1,149 @@
+import { useEvent } from 'expo';
+import {Asset} from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { StyleSheet,ScrollView, View, Button,Text,Platform } from 'react-native';
+import {useEffect,useState} from 'react';
+const videoSource =
+  '../assets/Instagram\ Reels\ Video\ 949.mp4';
+
+export default function PlayVideoComponent() {
+  const player = useVideoPlayer(require(videoSource), (player) => {
+    player.loop = true;
+    player.play();
+  });
+
+  const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
+
+  const [time, setTime] = useState(0);
+  const [subs, setSubs] = useState([]);
+  const [currentSub, setCurrentSub] = useState('');
+  const [SubtitlesEnabled,setSubtitlesEnabled]=useState(true);
+  useEffect(() => {
+
+    (async () => {
+      const content = await loadAssFile(require('../assets/subtitles.ass'));
+      setSubs(parseASS(content));
+    })();
+  }, []);
+console.log("Subtitles:",subs);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (player.currentTime != null) {
+      setTime(player.currentTime); // seconds
+    }
+  }, 200); // update every 200ms
+
+  return () => clearInterval(interval);
+}, [player]);
+  useEffect(() => {
+    const sub = subs.find(s => time >= s.start && time <= s.end);
+    setCurrentSub(sub ? sub.text : '');
+  }, [time, subs]);
+console.log("currentSubtitle",currentSub)
+  return (
+    <ScrollView >
+ <View style={styles.contentContainer}> 
+      <VideoView style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
+      <View style={styles.controlsContainer}>
+        <Button
+          title={isPlaying ? 'Pause' : 'Play'}
+          onPress={() => {
+            if (isPlaying) {
+              player.pause();
+            } else {
+              player.play();
+            }
+          }}
+        />
+        <View style={{width:10,height:10}}/>
+        <Button
+          title={SubtitlesEnabled ? 'Subtitles:OFF' : 'Subtitles:ON'}
+          onPress={() => {
+          if (SubtitlesEnabled){
+            setSubtitlesEnabled(false)
+          }
+          else{
+            setSubtitlesEnabled(true)
+          }
+          }}
+        />
+ 
+      </View>
+      <View>
+      
+      <Text style={{
+        width: '100%',
+        textAlign: 'center',
+        color: 'white',
+        fontSize: 20,
+        backgroundColor: 'rgba(0,0,0,0.5)'
+      }}>
+       {SubtitlesEnabled?`Subtitles:${currentSub}`:""}
+      </Text>
+      </View>
+    </View>
+    </ScrollView>
+  );
+}
+        
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    width:'100%',
+    height:'100%',
+    flexDirection:'column',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  video: {
+    width: '80%',
+    height: '30%',
+  },
+  controlsContainer: {
+    padding: 5,
+    flex:1,
+    flexDirection:'row',
+    gap:5,
+  },
+});
+
+
+function parseASS(content) {
+  const lines = content.split(/\r?\n/);
+  const dialogues = [];
+
+  for (let line of lines) {
+    if (line.startsWith('Dialogue:')) {
+      const parts = line.split(',');
+      const start = timeToSeconds(parts[1]);
+      const end = timeToSeconds(parts[2]);
+      const text = parts.slice(9).join(',').replace(/{.*?}/g, '');
+      dialogues.push({ start, end, text });
+    }
+  }
+
+  return dialogues;
+}
+
+function timeToSeconds(t) {
+  const [h, m, s] = t.split(':');
+  const [sec, ms] = s.split('.');
+  return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(sec) + (ms ? parseInt(ms) / 100 : 0);
+}
+
+async function loadAssFile(moduleRef: number) {
+  const asset = Asset.fromModule(moduleRef);
+  await asset.downloadAsync();
+
+  if (Platform.OS === 'web') {
+    // On web, fetch directly from the URL
+    const response = await fetch(asset.uri);
+    return await response.text();
+  } else {
+    // On iOS/Android, use FileSystem
+    return await FileSystem.readAsStringAsync(asset.localUri || '');
+  }
+}
