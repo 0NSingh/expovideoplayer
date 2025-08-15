@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   video: {
-    width: '80%',
+    width: '60%',
     height: '30%',
   },
   controlsContainer: {
