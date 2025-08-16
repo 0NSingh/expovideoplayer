@@ -90,7 +90,7 @@ console.log("currentSubtitle",currentSub)
         
 
 const styles = StyleSheet.create({
-  wraper:{flex:1,},
+  wrapper:{flex:1,},
   contentContainer: {flex:1,
     flexDirection:'column',
     padding: 10,
