@@ -91,8 +91,6 @@ console.log("currentSubtitle",currentSub)
 
 const styles = StyleSheet.create({
   contentContainer: {
-    width:'100%',
-    height:'100%',
     flexDirection:'column',
     padding: 10,
     alignItems: 'center',
