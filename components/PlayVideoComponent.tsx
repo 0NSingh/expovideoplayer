@@ -43,7 +43,7 @@ useEffect(() => {
   }, [time, subs]);
 console.log("currentSubtitle",currentSub)
   return (
-    <ScrollView >
+    <ScrollView style={styles.wrapper}>
  <View style={styles.contentContainer}> 
       <VideoView style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
       <View style={styles.controlsContainer}>
@@ -90,7 +90,8 @@ console.log("currentSubtitle",currentSub)
         
 
 const styles = StyleSheet.create({
-  contentContainer: {
+  wraper:{flex:1,},
+  contentContainer: {flex:1,
     flexDirection:'column',
     padding: 10,
     alignItems: 'center',
