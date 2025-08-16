@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   video: {
-    width: '60%',
-    height: '30%',
+    width: 550,
+    height: 300,
   },
   controlsContainer: {
     padding: 5,
